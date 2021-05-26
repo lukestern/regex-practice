@@ -5,8 +5,6 @@ const readline = require("readline-sync");
 const fl = fs.readFileSync('test.txt', 'utf8');
 const flArray = fl.split(/[\r\n]+|\s/)
 
-let domainSearch = new RegExp('.@(.*\..*)')
-
 // Function for choosing n highest attributes in an object.
 const pickHighest = (obj, num = 1) => {
     const requiredObj = {};
@@ -21,7 +19,19 @@ const pickHighest = (obj, num = 1) => {
     return requiredObj;
 };
 
+// Function for returning attributes with more than n instances.
+const returnIfHigherThanN = (obj, num = 1,) => {
+    const requiredObj = {};
+    Object.keys(obj).forEach((key) => {
+        if (obj[key] > num) {
+            requiredObj[key] = obj[key];
+        }
+    });
+    return requiredObj;
+};
+
 const getDomainSet = () => {
+    let domainSearch = new RegExp('.@(.*\..*)')
     let domainList = [];
     for (let i = 0; i < flArray.length; i++) {
         let domain = flArray[i].match(domainSearch);
@@ -44,7 +54,6 @@ const GetDomainCounter = (domainSet) => {
 const UpdateDomainCounter = (dict, domainSet) => {
     for (let i = 0; i < flArray.length; i++) {
         for (let item of domainSet) {
-            // console.log('.*@' + item + '$')
             if (flArray[i].match('.*@' + item + '$')) {
                 dict[item]++;
             }
@@ -53,9 +62,57 @@ const UpdateDomainCounter = (dict, domainSet) => {
     return dict;
 }
 
+// loop back through and count up different domains
+const UpdateGroupedDomainCounter = (dict, domainSet) => {
+    let groupedDomainSearch = new RegExp('[^\.]*')
+    for (let i = 0; i < flArray.length; i++) {
+        for (let item of domainSet) {
+            if (flArray[i].match('.*@' + item + '$')) {
+                let groupedKey = item.match(groupedDomainSearch);
+                dict[groupedKey]++;
+            }
+        }
+    }
+    return dict;
+}
+
+const getGroupedDomainSet = (domainSet) => {
+    let groupedDomainSearch = new RegExp('[^\.]*')
+    let groupedDomainList = [];
+    for (let item of domainSet) {
+        let groupedDomain = item.match(groupedDomainSearch);
+        groupedDomainList.push(groupedDomain)
+    }
+    return new Set(groupedDomainList);
+}
+
 let domainSet = getDomainSet();
-console.log(flArray)
 let domainCounter = GetDomainCounter(domainSet);
 let result = UpdateDomainCounter(domainCounter, domainSet);
 
-console.log(pickHighest(result, 16));
+let groupedDomainSet = getGroupedDomainSet(domainSet);
+let groupDomainCounter = GetDomainCounter(groupedDomainSet);
+let groupedResult = UpdateGroupedDomainCounter(groupDomainCounter, domainSet)
+
+
+
+console.log('Please select the mode you want: \n1) Top 10 results \n2) More than n occurrences \n3) Grouped by domain');
+const mode = Number(readline.prompt());
+
+if (mode === 1) {
+    console.log(pickHighest(result,10));
+} else if (mode === 2) {
+    console.log('Please enter a number:')
+    const hits = Number(readline.prompt());
+    console.log(returnIfHigherThanN(result, hits));
+} else if (mode === 3) {
+    console.log(groupedResult);
+}
+
+
+
+
+
+
+
+
