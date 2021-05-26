@@ -3,7 +3,7 @@ const readline = require("readline-sync");
 
 // Read file and make array of words.
 const fl = fs.readFileSync('test.txt', 'utf8');
-const flArray = fl.split(/[\r\n]+|\s/)
+const flArray = fl.split(/\s+/);
 
 // Function for choosing n highest attributes in an object.
 const pickHighest = (obj, num = 1) => {
@@ -31,10 +31,10 @@ const returnIfHigherThanN = (obj, num = 1,) => {
 };
 
 const getDomainSet = () => {
-    let domainSearch = new RegExp('.@(.*\..*)')
-    let domainList = [];
+    const domainSearch = new RegExp('.@(.*\..*)')
+    const domainList = [];
     for (let i = 0; i < flArray.length; i++) {
-        let domain = flArray[i].match(domainSearch);
+        const domain = flArray[i].match(domainSearch);
         if (domain) {
             domainList.push(domain[1]);
         }
@@ -43,7 +43,7 @@ const getDomainSet = () => {
 };
 
 const GetDomainCounter = (domainSet) => {
-    dict = {};
+    const dict = {};
     for (let item of domainSet) {
         dict[item] = 0;
     }
@@ -64,11 +64,11 @@ const UpdateDomainCounter = (dict, domainSet) => {
 
 // loop back through and count up different domains
 const UpdateGroupedDomainCounter = (dict, domainSet) => {
-    let groupedDomainSearch = new RegExp('[^\.]*')
+    const groupedDomainSearch = new RegExp('[^\.]*')
     for (let i = 0; i < flArray.length; i++) {
         for (let item of domainSet) {
             if (flArray[i].match('.*@' + item + '$')) {
-                let groupedKey = item.match(groupedDomainSearch);
+                const groupedKey = item.match(groupedDomainSearch);
                 dict[groupedKey]++;
             }
         }
@@ -77,30 +77,29 @@ const UpdateGroupedDomainCounter = (dict, domainSet) => {
 }
 
 const getGroupedDomainSet = (domainSet) => {
-    let groupedDomainSearch = new RegExp('[^\.]*')
-    let groupedDomainList = [];
+    const groupedDomainSearch = new RegExp('[^\.]*')
+    const groupedDomainList = [];
     for (let item of domainSet) {
-        let groupedDomain = item.match(groupedDomainSearch);
+        const groupedDomain = item.match(groupedDomainSearch);
         groupedDomainList.push(groupedDomain)
     }
     return new Set(groupedDomainList);
 }
 
-let domainSet = getDomainSet();
-let domainCounter = GetDomainCounter(domainSet);
-let result = UpdateDomainCounter(domainCounter, domainSet);
+const domainSet = getDomainSet();
+const domainCounter = GetDomainCounter(domainSet);
+const result = UpdateDomainCounter(domainCounter, domainSet);
 
-let groupedDomainSet = getGroupedDomainSet(domainSet);
-let groupDomainCounter = GetDomainCounter(groupedDomainSet);
-let groupedResult = UpdateGroupedDomainCounter(groupDomainCounter, domainSet)
-
+const groupedDomainSet = getGroupedDomainSet(domainSet);
+const groupDomainCounter = GetDomainCounter(groupedDomainSet);
+const groupedResult = UpdateGroupedDomainCounter(groupDomainCounter, domainSet)
 
 
 console.log('Please select the mode you want: \n1) Top 10 results \n2) More than n occurrences \n3) Grouped by domain');
 const mode = Number(readline.prompt());
 
 if (mode === 1) {
-    console.log(pickHighest(result,10));
+    console.log(pickHighest(result, 10));
 } else if (mode === 2) {
     console.log('Please enter a number:')
     const hits = Number(readline.prompt());
