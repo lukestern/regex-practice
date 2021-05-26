@@ -1,14 +1,13 @@
 const fs = require('fs');
-const { domain } = require('process');
+const readline = require("readline-sync");
 
+// Read file and make array of words.
 const fl = fs.readFileSync('test.txt', 'utf8');
-const flArray = fl.split(' ')
-
-let dict = new Object();
-let domainList = [];
+const flArray = fl.split(/[\r\n]+|\s/)
 
 let domainSearch = new RegExp('.@(.*\..*)')
 
+// Function for choosing n highest attributes in an object.
 const pickHighest = (obj, num = 1) => {
     const requiredObj = {};
     if (num > Object.keys(obj).length) {
@@ -22,27 +21,41 @@ const pickHighest = (obj, num = 1) => {
     return requiredObj;
 };
 
-
-for (let i = 0; i < flArray.length; i++) {
-    let domain = flArray[i].match(domainSearch);
-    if (domain) {
-        domainList.push(domain[1])
+const getDomainSet = () => {
+    let domainList = [];
+    for (let i = 0; i < flArray.length; i++) {
+        let domain = flArray[i].match(domainSearch);
+        if (domain) {
+            domainList.push(domain[1]);
+        }
     }
-}
+    return new Set(domainList);
+};
 
-let domainSet = new Set(domainList)
-//use to make object keys
-for (let item of domainSet) {
-    dict[item] = 0;
+const GetDomainCounter = (domainSet) => {
+    dict = {};
+    for (let item of domainSet) {
+        dict[item] = 0;
+    }
+    return dict;
 }
 
 // loop back through and count up different domains
-for (let i = 0; i < flArray.length; i++) {
-    for (let item of domainSet) {
-        if (flArray[i].match('.*@' + item)) {
-            dict[item]++;
+const UpdateDomainCounter = (dict, domainSet) => {
+    for (let i = 0; i < flArray.length; i++) {
+        for (let item of domainSet) {
+            // console.log('.*@' + item + '$')
+            if (flArray[i].match('.*@' + item + '$')) {
+                dict[item]++;
+            }
         }
     }
+    return dict;
 }
 
-console.log(pickHighest(dict, 10));
+let domainSet = getDomainSet();
+console.log(flArray)
+let domainCounter = GetDomainCounter(domainSet);
+let result = UpdateDomainCounter(domainCounter, domainSet);
+
+console.log(pickHighest(result, 16));
